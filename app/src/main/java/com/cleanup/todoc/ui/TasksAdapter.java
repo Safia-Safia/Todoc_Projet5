@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.cleanup.todoc.R;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
+import com.cleanup.todoc.model.TaskAndProject;
 
 import java.util.List;
 
@@ -21,11 +22,12 @@ import java.util.List;
  * @author Gaëtan HERFRAY
  */
 public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
+    private TaskViewModel taskViewModel;
     /**
      * The list of tasks the adapter deals with
      */
     @NonNull
-    private List<Task> tasks;
+    private List<TaskAndProject> tasks;
 
     /**
      * The listener for when a task needs to be deleted
@@ -38,20 +40,11 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
      *
      * @param tasks the list of tasks the adapter deals with to set
      */
-    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
+    TasksAdapter(@NonNull final List<TaskAndProject> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
         this.tasks = tasks;
         this.deleteTaskListener = deleteTaskListener;
     }
 
-    /**
-     * Updates the list of tasks the adapter deals with.
-     *
-     * @param tasks the list of tasks the adapter deals with to set
-     */
-    void updateTasks(@NonNull final List<Task> tasks) {
-        this.tasks = tasks;
-        notifyDataSetChanged();
-    }
 
     @NonNull
     @Override
@@ -143,16 +136,16 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         /**
          * Binds a task to the item view.
          *
-         * @param task the task to bind in the item view
+         * @param taskAndProject the task to bind in the item view
          */
-        void bind(Task task) {
-            lblTaskName.setText(task.getName());
-            imgDelete.setTag(task);
+        void bind(TaskAndProject taskAndProject) {
+            lblTaskName.setText(taskAndProject.mTask.getTaskName());
+            imgDelete.setTag(taskAndProject);
 
-            final Project taskProject = task.getProject();
+            final Project taskProject = taskAndProject.mProject;
             if (taskProject != null) {
                 imgProject.setSupportImageTintList(ColorStateList.valueOf(taskProject.getColor()));
-                lblProjectName.setText(taskProject.getName());
+                lblProjectName.setText(taskProject.getProjectName());
             } else {
                 imgProject.setVisibility(View.INVISIBLE);
                 lblProjectName.setText("");

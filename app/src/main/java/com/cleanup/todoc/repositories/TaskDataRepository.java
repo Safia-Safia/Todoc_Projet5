@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 
 import com.cleanup.todoc.database.dao.TaskDao;
 import com.cleanup.todoc.model.Task;
+import com.cleanup.todoc.model.TaskAndProject;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class TaskDataRepository {
     }
 
     //--- TASKS LIST ---
-    public LiveData<List<Task>> getTasks() {
+    public LiveData<List<TaskAndProject>> getTasks() {
         return this.mTaskDao.getTasks();
     }
 
@@ -36,12 +37,12 @@ public class TaskDataRepository {
 
     //--- ORDER TASKS ---
 
-    public LiveData<List<Task>> orderTaskByAsc(){return this.mTaskDao.orderTaskByAsc();}
+    public LiveData<List<TaskAndProject>> orderTaskByAsc(){return this.mTaskDao.orderTaskByAsc();}
 
-    public LiveData<List<Task>> orderTaskByDesc(){return this.mTaskDao.orderTaskByDesc();}
+    public LiveData<List<TaskAndProject>> orderTaskByDesc(){return this.mTaskDao.orderTaskByDesc();}
 
-    public LiveData<List<Task>> orderTaskByRecent(){return this.mTaskDao.orderTaskByRecent();}
+    public LiveData<List<TaskAndProject>> orderTaskByRecent(){return this.mTaskDao.orderTaskByRecent();}
 
-    public LiveData<List<Task>> orderTaskByOlder(){return this.mTaskDao.orderTaskByOlder();}
+    public LiveData<List<TaskAndProject>> orderTaskByOlder(){return this.mTaskDao.orderTaskByOlder();}
 
 }

@@ -1,12 +1,24 @@
 package com.cleanup.todoc;
 
+import android.arch.core.executor.testing.InstantTaskExecutorRule;
+import android.arch.persistence.room.Room;
+
+import androidx.test.InstrumentationRegistry;
+
+import com.cleanup.todoc.database.TodocDatabase;
 import com.cleanup.todoc.model.Task;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -17,7 +29,32 @@ import static org.junit.Assert.assertSame;
  *
  * @author Gaëtan HERFRAY
  */
+@RunWith(JUnit4.class)
 public class TaskUnitTest {
+
+
+    // FOR DATA
+    private TodocDatabase database;
+
+    // DATA SET FOR TEST
+
+    @Rule
+    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
+
+    @Before
+    public void initDb() throws Exception {
+        this.database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(),
+                TodocDatabase.class)
+                .allowMainThreadQueries()
+                .build();
+    }
+
+    @After
+    public void closeDb() throws Exception {
+        database.close();
+    }
+
+
     @Test
     public void test_projects() {
         final Task task1 = new Task(1, 1, "task 1", new Date().getTime());
@@ -25,9 +62,9 @@ public class TaskUnitTest {
         final Task task3 = new Task(3, 3, "task 3", new Date().getTime());
         final Task task4 = new Task(4, 4, "task 4", new Date().getTime());
 
-        assertEquals("Projet Tartampion", task1.getProject().getName());
-        assertEquals("Projet Lucidia", task2.getProject().getName());
-        assertEquals("Projet Circus", task3.getProject().getName());
+        assertEquals("Projet Tartampion", task1.getProject().getProjectName());
+        assertEquals("Projet Lucidia", task2.getProject().getProjectName());
+        assertEquals("Projet Circus", task3.getProject().getProjectName());
         assertNull(task4.getProject());
     }
 
@@ -41,7 +78,9 @@ public class TaskUnitTest {
         tasks.add(task1);
         tasks.add(task2);
         tasks.add(task3);
-        Collections.sort(tasks, new Task.TaskAZComparator());
+
+        List<Task> task =  LiveDataTestUtil.getValue(this.database.taskDao().orderTaskByAsc(tasks));
+             //   Collections.sort(tasks, new Task.TaskAZComparator());
 
         assertSame(tasks.get(0), task1);
         assertSame(tasks.get(1), task3);

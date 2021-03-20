@@ -11,12 +11,12 @@ import java.util.concurrent.Executors;
 
 public class Injection {
 
-    public static ProjectDataRepository provideItemDataSource(Context context) {
+    public static ProjectDataRepository provideProjectDataSource(Context context) {
         TodocDatabase database = TodocDatabase.getInstance(context);
         return new ProjectDataRepository(database.projectDao());
     }
 
-    public static TaskDataRepository provideUserDataSource(Context context) {
+    public static TaskDataRepository provideTaskDataSource(Context context) {
         TodocDatabase database = TodocDatabase.getInstance(context);
         return new TaskDataRepository(database.taskDao());
     }
@@ -24,9 +24,9 @@ public class Injection {
     public static Executor provideExecutor(){ return Executors.newSingleThreadExecutor(); }
 
     public static ViewModelFactory provideViewModelFactory(Context context) {
-        ProjectDataRepository projectSourceItem = provideItemDataSource(context);
-        TaskDataRepository taskSourceUser = provideUserDataSource(context);
+        ProjectDataRepository projectSourceItem = provideProjectDataSource(context);
+        TaskDataRepository taskSourceUser = provideTaskDataSource(context);
         Executor executor = provideExecutor();
-        return new ViewModelFactory(projectSourceItem, taskSourceUser, executor);
+        return new ViewModelFactory(taskSourceUser,projectSourceItem, executor);
     }
 }

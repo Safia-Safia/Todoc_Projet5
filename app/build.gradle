@@ -37,6 +37,10 @@ dependencies {
 
     // TESTING
     androidTestCompile "android.arch.core:core-testing:1.1.1"
+    testImplementation "android.arch.core:core-testing:1.1.1"
+    testImplementation 'androidx.test:core:1.1.0'
+    testImplementation 'androidx.test.ext:junit:1.1.0'
+
     //ROOM
     implementation 'android.arch.persistence.room:runtime:1.1.1'
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"

@@ -23,6 +23,7 @@ import com.cleanup.todoc.Injection.ViewModelFactory;
 import com.cleanup.todoc.R;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
+import com.cleanup.todoc.model.TaskAndProject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,24 +39,17 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * List of all projects available in the application
      */
-    private final Project[] allProjects = Project.getAllProjects();
-
     private TaskViewModel taskViewModel;
 
     /**
      * List of all current tasks of the application
      */
-    private ArrayList<Task> tasks = new ArrayList<>();
+    private ArrayList<TaskAndProject> tasks = new ArrayList<>();
 
     /**
      * The adapter which handles the list of tasks
      */
     private final TasksAdapter adapter = new TasksAdapter(tasks, this);
-
-    /**
-     * The sort method to be used to display tasks
-     */
-    private int orderTasks;
 
     /**
      * Dialog to create a new task
@@ -87,18 +81,16 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         setUpView();
-        initRecyclerView();
         configureViewModel();
         getTasks();
 
-        findViewById(R.id.fab_add_task).setOnClickListener(view -> showAddTaskDialog());
     }
 
     public void setUpView(){
         listTasks = findViewById(R.id.list_tasks);
         lblNoTasks = findViewById(R.id.lbl_no_task);
+        findViewById(R.id.fab_add_task).setOnClickListener(view -> showAddTaskDialog());
     }
     
     public void initRecyclerView(){
@@ -108,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     public void getTasks(){
         this.taskViewModel.getTasks().observe(this,tasks1 -> {
-            tasks = (ArrayList<Task>) tasks1;
+            tasks = (ArrayList<TaskAndProject>) tasks1;
             initRecyclerView();
             updateTasks(tasks);
         });
@@ -172,11 +164,14 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * Sets the data of the Spinner with projects to associate to a new task
      */
     private void populateDialogSpinner() {
-        final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, allProjects);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        if (dialogSpinner != null) {
-            dialogSpinner.setAdapter(adapter);
-        }
+        taskViewModel.getProjects().observe(this, projects -> {
+            final ArrayAdapter<Project> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, projects);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            if (dialogSpinner != null) {
+                dialogSpinner.setAdapter(adapter);
+            }
+        });
+
     }
     /**
      * Called when the user clicks on the positive button of the Create Task Dialog.
@@ -207,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
                 Task task = new Task(
                         id,
-                        taskProject.getId(),
+                        taskProject.getProjectId(),
                         taskName,
                         new Date().getTime()
                 );
@@ -249,23 +244,17 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
+       int id = item.getItemId();
 
         if (id == R.id.filter_alphabetical) {
-            orderTasks = 1;
-            getSortTasks();
+            this.taskViewModel.orderTaskByAsc().observe(this, this::updateTasks);
         } else if (id == R.id.filter_alphabetical_inverted) {
-            orderTasks = 2;
-            getSortTasks();
+            this.taskViewModel.orderTaskByDesc().observe(this, this::updateTasks);
         } else if (id == R.id.filter_oldest_first) {
-            orderTasks = 3;
-            getSortTasks();
+            this.taskViewModel.orderTaskByRecent().observe(this, this::updateTasks);
         } else if (id == R.id.filter_recent_first) {
-            orderTasks = 4;
-            getSortTasks();
+            this.taskViewModel.orderTaskByOlder().observe(this, this::updateTasks);
         }
-
-        updateTasks(tasks);
 
         return super.onOptionsItemSelected(item);
     }
@@ -273,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * Updates the list of tasks in the UI
      */
-    private void updateTasks(List<Task> tasks) {
+    private void updateTasks(List<TaskAndProject> tasks) {
         if (tasks.size() == 0) {
             lblNoTasks.setVisibility(View.VISIBLE);
             listTasks.setVisibility(View.GONE);
@@ -284,30 +273,6 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         }
     }
 
-    public void getSortTasks(){
-        switch (orderTasks) {
-            case 1:
-                this.taskViewModel.orderTaskByAsc().observe(this,this ::updateTasks);
-                //Collections.sort(tasks, new Task.TaskAZComparator());
-                break;
-            case 2:
-                this.taskViewModel.orderTaskByDesc().observe(this,this ::updateTasks);
-                //Collections.sort(tasks, new Task.TaskZAComparator());
-                break;
-            case 3:
-                this.taskViewModel.orderTaskByRecent().observe(this,this ::updateTasks);
-                //Collections.sort(tasks, new Task.TaskRecentComparator());
-                break;
-            case 4:
-                this.taskViewModel.orderTaskByOlder().observe(this,this ::updateTasks);
-                //Collections.sort(tasks, new Task.TaskOldComparator());
-                break;
-
-        }
-    }
-
-    //TODO simplifier le code de MainActivity
-    //TODO faire les tests unitaires
 }
 
 
