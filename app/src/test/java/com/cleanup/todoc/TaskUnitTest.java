@@ -4,12 +4,14 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.persistence.room.Room;
 
 import androidx.test.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.cleanup.todoc.database.TodocDatabase;
 import com.cleanup.todoc.model.Task;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +31,7 @@ import static org.junit.Assert.assertSame;
  *
  * @author Gaëtan HERFRAY
  */
-@RunWith(JUnit4.class)
+@RunWith(AndroidJUnit4.class)
 public class TaskUnitTest {
 
 
@@ -41,9 +43,14 @@ public class TaskUnitTest {
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
+    private final Task task1 = new Task(1, 1, "aaa", 123);
+    private final Task task2 = new Task(2, 2, "zzz", 124);
+    private final Task task3 = new Task(3, 3, "hhh", 125);
+
+
     @Before
     public void initDb() throws Exception {
-        this.database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(),
+        this.database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 TodocDatabase.class)
                 .allowMainThreadQueries()
                 .build();
@@ -62,25 +69,21 @@ public class TaskUnitTest {
         final Task task3 = new Task(3, 3, "task 3", new Date().getTime());
         final Task task4 = new Task(4, 4, "task 4", new Date().getTime());
 
-        assertEquals("Projet Tartampion", task1.getProject().getProjectName());
-        assertEquals("Projet Lucidia", task2.getProject().getProjectName());
-        assertEquals("Projet Circus", task3.getProject().getProjectName());
-        assertNull(task4.getProject());
+        assertEquals("Projet Tartampion", task1.projectOwnerId);
+        assertEquals("Projet Lucidia", task2.projectOwnerId);
+        assertEquals("Projet Circus", task3.projectOwnerId);
+        assertNull(task4.projectOwnerId);
     }
 
     @Test
     public void test_az_comparator() {
-        final Task task1 = new Task(1, 1, "aaa", 123);
-        final Task task2 = new Task(2, 2, "zzz", 124);
-        final Task task3 = new Task(3, 3, "hhh", 125);
 
         final ArrayList<Task> tasks = new ArrayList<>();
         tasks.add(task1);
         tasks.add(task2);
         tasks.add(task3);
 
-        List<Task> task =  LiveDataTestUtil.getValue(this.database.taskDao().orderTaskByAsc(tasks));
-             //   Collections.sort(tasks, new Task.TaskAZComparator());
+        //Collections.sort(tasks, new Task.TaskAZComparator());
 
         assertSame(tasks.get(0), task1);
         assertSame(tasks.get(1), task3);
@@ -89,15 +92,12 @@ public class TaskUnitTest {
 
     @Test
     public void test_za_comparator() {
-        final Task task1 = new Task(1, 1, "aaa", 123);
-        final Task task2 = new Task(2, 2, "zzz", 124);
-        final Task task3 = new Task(3, 3, "hhh", 125);
 
         final ArrayList<Task> tasks = new ArrayList<>();
         tasks.add(task1);
         tasks.add(task2);
         tasks.add(task3);
-        Collections.sort(tasks, new Task.TaskZAComparator());
+        //Collections.sort(tasks, new Task.TaskZAComparator());
 
         assertSame(tasks.get(0), task2);
         assertSame(tasks.get(1), task3);
@@ -106,15 +106,14 @@ public class TaskUnitTest {
 
     @Test
     public void test_recent_comparator() {
-        final Task task1 = new Task(1, 1, "aaa", 123);
-        final Task task2 = new Task(2, 2, "zzz", 124);
-        final Task task3 = new Task(3, 3, "hhh", 125);
 
         final ArrayList<Task> tasks = new ArrayList<>();
         tasks.add(task1);
         tasks.add(task2);
         tasks.add(task3);
-        Collections.sort(tasks, new Task.TaskRecentComparator());
+
+
+        //Collections.sort(tasks, new Task.TaskRecentComparator());
 
         assertSame(tasks.get(0), task3);
         assertSame(tasks.get(1), task2);
@@ -123,15 +122,12 @@ public class TaskUnitTest {
 
     @Test
     public void test_old_comparator() {
-        final Task task1 = new Task(1, 1, "aaa", 123);
-        final Task task2 = new Task(2, 2, "zzz", 124);
-        final Task task3 = new Task(3, 3, "hhh", 125);
 
         final ArrayList<Task> tasks = new ArrayList<>();
         tasks.add(task1);
         tasks.add(task2);
         tasks.add(task3);
-        Collections.sort(tasks, new Task.TaskOldComparator());
+       // Collections.sort(tasks, new Task.TaskOldComparator());
 
         assertSame(tasks.get(0), task1);
         assertSame(tasks.get(1), task2);

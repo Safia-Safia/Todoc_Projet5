@@ -49,6 +49,7 @@ public abstract class TodocDatabase extends RoomDatabase {
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
                 ContentValues contentValues = new ContentValues();
+
                 contentValues.put("projectId", 1);
                 contentValues.put("projectName", "Projet Tartampion");
                 contentValues.put("color", 0xFFEADAD1);

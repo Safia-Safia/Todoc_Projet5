@@ -18,9 +18,6 @@ public interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createTask(Task task);
 
-    @Query("SELECT * FROM Task WHERE taskId = :id")
-    LiveData<Task> getTask(long id);
-
     @Transaction
     @Query("SELECT * FROM Task JOIN Project ON projectId = projectOwnerId")
     LiveData<List<TaskAndProject>> getTasks();

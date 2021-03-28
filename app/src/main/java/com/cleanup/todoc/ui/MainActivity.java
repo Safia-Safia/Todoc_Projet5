@@ -98,20 +98,20 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         listTasks.setAdapter(adapter);
     }
 
-    public void getTasks(){
-        this.taskViewModel.getTasks().observe(this,tasks1 -> {
-            tasks = (ArrayList<TaskAndProject>) tasks1;
-            initRecyclerView();
-            updateTasks(tasks);
-        });
-    }
-
     /**
      * Init ViewModel
      */
     public void configureViewModel(){
         ViewModelFactory viewModelFactory = Injection.provideViewModelFactory(this);
         this.taskViewModel = ViewModelProviders.of(this, viewModelFactory).get(TaskViewModel.class);
+    }
+
+    public void getTasks(){
+        this.taskViewModel.getTasks().observe(this,tasks1 -> {
+            tasks = (ArrayList<TaskAndProject>) tasks1;
+            initRecyclerView();
+            updateTasks(tasks);
+        });
     }
 
     @Override
