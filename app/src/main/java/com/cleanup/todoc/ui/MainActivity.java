@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +37,9 @@ import java.util.List;
  * @author Gaëtan HERFRAY
  */
 public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener {
+
+
+
     /**
      * List of all projects available in the application
      */
@@ -87,13 +91,13 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     }
 
-    public void setUpView(){
+    public void setUpView() {
         listTasks = findViewById(R.id.list_tasks);
         lblNoTasks = findViewById(R.id.lbl_no_task);
         findViewById(R.id.fab_add_task).setOnClickListener(view -> showAddTaskDialog());
     }
-    
-    public void initRecyclerView(){
+
+    public void initRecyclerView() {
         listTasks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         listTasks.setAdapter(adapter);
     }
@@ -101,13 +105,13 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * Init ViewModel
      */
-    public void configureViewModel(){
+    public void configureViewModel() {
         ViewModelFactory viewModelFactory = Injection.provideViewModelFactory(this);
         this.taskViewModel = ViewModelProviders.of(this, viewModelFactory).get(TaskViewModel.class);
     }
 
-    public void getTasks(){
-        this.taskViewModel.getTasks().observe(this,tasks1 -> {
+    public void getTasks() {
+        this.taskViewModel.getTasks().observe(this, tasks1 -> {
             tasks = (ArrayList<TaskAndProject>) tasks1;
             initRecyclerView();
             updateTasks(tasks);
@@ -143,9 +147,9 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         alertBuilder.setView(R.layout.dialog_add_task);
         alertBuilder.setPositiveButton(R.string.add, null);
         alertBuilder.setOnDismissListener((dialogInterface -> {
-                dialogEditText = null;
-                dialogSpinner = null;
-                dialog = null;
+            dialogEditText = null;
+            dialogSpinner = null;
+            dialog = null;
         }));
 
         dialog = alertBuilder.create();
@@ -171,8 +175,8 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
                 dialogSpinner.setAdapter(adapter);
             }
         });
-
     }
+
     /**
      * Called when the user clicks on the positive button of the Create Task Dialog.
      *
@@ -212,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
                 dialogInterface.dismiss();
             }
             // If name has been set, but project has not been set (this should never occur)
-            else{
+            else {
                 dialogInterface.dismiss();
             }
         }
@@ -244,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-       int id = item.getItemId();
+        int id = item.getItemId();
 
         if (id == R.id.filter_alphabetical) {
             this.taskViewModel.orderTaskByAsc().observe(this, this::updateTasks);
@@ -269,10 +273,12 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         } else {
             lblNoTasks.setVisibility(View.GONE);
             listTasks.setVisibility(View.VISIBLE);
-            listTasks.setAdapter(new TasksAdapter(tasks,this));
+            listTasks.setAdapter(new TasksAdapter(tasks, this));
         }
     }
-
+    public TaskViewModel getTaskViewModel() {
+        return taskViewModel;
+    }
 }
 
 

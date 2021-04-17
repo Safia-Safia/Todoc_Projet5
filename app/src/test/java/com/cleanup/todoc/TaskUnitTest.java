@@ -1,13 +1,24 @@
 package com.cleanup.todoc;
 
 import android.arch.core.executor.testing.InstantTaskExecutorRule;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
 import android.arch.persistence.room.Room;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.cleanup.todoc.database.TodocDatabase;
+import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
+import com.cleanup.todoc.model.TaskAndProject;
+import com.cleanup.todoc.repositories.ProjectDataRepository;
+import com.cleanup.todoc.repositories.TaskDataRepository;
+import com.cleanup.todoc.ui.MainActivity;
+import com.cleanup.todoc.ui.TaskViewModel;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,29 +27,40 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for tasks
  *
  * @author Gaëtan HERFRAY
  */
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnit4.class)
 public class TaskUnitTest {
 
-
-    // FOR DATA
-    private TodocDatabase database;
-
-    // DATA SET FOR TEST
+    @Mock
+    private TaskDataRepository taskDataRepository;
+    @Mock
+    private ProjectDataRepository projectDataRepository;
+    @Mock
+    Executor executor;
+    private TaskViewModel taskViewModel;
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
@@ -46,91 +68,107 @@ public class TaskUnitTest {
     private final Task task1 = new Task(1, 1, "aaa", 123);
     private final Task task2 = new Task(2, 2, "zzz", 124);
     private final Task task3 = new Task(3, 3, "hhh", 125);
+    private final Project project1 = new Project(1, "Project Tartampion", 0xFFEADAD1);
+    private final Project project2 = new Project(1, "Project Lucidia", 0xFFB4CDBA);
+    private final TaskAndProject taskAndProject1 = new TaskAndProject();
+    private final TaskAndProject taskAndProject2 = new TaskAndProject();
+    private final TaskAndProject taskAndProject3 = new TaskAndProject();
 
 
     @Before
-    public void initDb() throws Exception {
-        this.database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                TodocDatabase.class)
-                .allowMainThreadQueries()
-                .build();
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        taskViewModel = new TaskViewModel(taskDataRepository, projectDataRepository, executor);
+        taskAndProject1.mTask = task1;
+        taskAndProject2.mTask = task2;
+        taskAndProject3.mTask = task3;
     }
-
-    @After
-    public void closeDb() throws Exception {
-        database.close();
-    }
-
 
     @Test
-    public void test_projects() {
-        final Task task1 = new Task(1, 1, "task 1", new Date().getTime());
-        final Task task2 = new Task(2, 2, "task 2", new Date().getTime());
-        final Task task3 = new Task(3, 3, "task 3", new Date().getTime());
-        final Task task4 = new Task(4, 4, "task 4", new Date().getTime());
-
-        assertEquals("Projet Tartampion", task1.projectOwnerId);
-        assertEquals("Projet Lucidia", task2.projectOwnerId);
-        assertEquals("Projet Circus", task3.projectOwnerId);
-        assertNull(task4.projectOwnerId);
+    public void getProjects() {
+        MutableLiveData<List<Project>> result = new MutableLiveData<>();
+        final ArrayList<Project> projects = new ArrayList<>();
+        projects.add(project1);
+        projects.add(project2);
+        result.setValue(projects);
+        Mockito.when(projectDataRepository.getProjects()).thenReturn(result);
+        taskViewModel.getProjects().observeForever(projects1 -> {
+            assertEquals(projects, projects1);
+        });
     }
+
+    @Test
+    public void getTasks() {
+        MutableLiveData<List<TaskAndProject>> result = new MutableLiveData<>();
+        final ArrayList<TaskAndProject> tasks = new ArrayList<>();
+        tasks.add(taskAndProject1);
+        tasks.add(taskAndProject2);
+        tasks.add(taskAndProject3);
+        result.setValue(tasks);
+        Mockito.when(taskDataRepository.getTasks()).thenReturn(result);
+        taskViewModel.getTasks().observeForever(taskAndProjects -> {
+            assertEquals(taskAndProjects, tasks);
+        });
+    }
+
+
 
     @Test
     public void test_az_comparator() {
-
-        final ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
-
-        //Collections.sort(tasks, new Task.TaskAZComparator());
-
-        assertSame(tasks.get(0), task1);
-        assertSame(tasks.get(1), task3);
-        assertSame(tasks.get(2), task2);
+        MutableLiveData<List<TaskAndProject>> result = new MutableLiveData<>();
+        final ArrayList<TaskAndProject> tasks = new ArrayList<>();
+        tasks.add(taskAndProject1);
+        tasks.add(taskAndProject3);
+        tasks.add(taskAndProject2);
+        result.setValue(tasks);
+        Mockito.when(taskDataRepository.orderTaskByAsc()).thenReturn(result);
+        taskViewModel.orderTaskByAsc().observeForever(taskAndProjects -> {
+            assertEquals(Arrays.asList(taskAndProjects.toArray()), Arrays.asList(tasks.toArray()));
+        });
     }
 
     @Test
     public void test_za_comparator() {
-
-        final ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
-        //Collections.sort(tasks, new Task.TaskZAComparator());
-
-        assertSame(tasks.get(0), task2);
-        assertSame(tasks.get(1), task3);
-        assertSame(tasks.get(2), task1);
+        MutableLiveData<List<TaskAndProject>> result = new MutableLiveData<>();
+        final ArrayList<TaskAndProject> tasks = new ArrayList<>();
+        tasks.add(taskAndProject2);
+        tasks.add(taskAndProject3);
+        tasks.add(taskAndProject1);
+        result.setValue(tasks);
+        Mockito.when(taskDataRepository.orderTaskByDesc()).thenReturn(result);
+        taskViewModel.orderTaskByDesc().observeForever(taskAndProjects -> {
+            assertSame(taskAndProjects, tasks);
+        });
     }
-
     @Test
     public void test_recent_comparator() {
-
-        final ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
-
-
-        //Collections.sort(tasks, new Task.TaskRecentComparator());
-
-        assertSame(tasks.get(0), task3);
-        assertSame(tasks.get(1), task2);
-        assertSame(tasks.get(2), task1);
+        MutableLiveData<List<TaskAndProject>> result = new MutableLiveData<>();
+        final ArrayList<TaskAndProject> tasks = new ArrayList<>();
+        tasks.add(taskAndProject3);
+        tasks.add(taskAndProject2);
+        tasks.add(taskAndProject1);
+        result.setValue(tasks);
+        Mockito.when(taskDataRepository.orderTaskByRecent()).thenReturn(result);
+        taskViewModel.orderTaskByRecent().observeForever(taskAndProjects -> {
+            assertSame(taskAndProjects.get(0).mTask.getCreationTimestamp(), task3.getCreationTimestamp());
+            assertSame(taskAndProjects.get(1).mTask.getCreationTimestamp(), task2.getCreationTimestamp());
+            assertSame(taskAndProjects.get(2).mTask.getCreationTimestamp(), task1.getCreationTimestamp());
+        });
     }
 
     @Test
     public void test_old_comparator() {
-
-        final ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(task1);
-        tasks.add(task2);
-        tasks.add(task3);
-       // Collections.sort(tasks, new Task.TaskOldComparator());
-
-        assertSame(tasks.get(0), task1);
-        assertSame(tasks.get(1), task2);
-        assertSame(tasks.get(2), task3);
+        MutableLiveData<List<TaskAndProject>> result = new MutableLiveData<>();
+        final ArrayList<TaskAndProject> tasks = new ArrayList<>();
+        tasks.add(taskAndProject1);
+        tasks.add(taskAndProject2);
+        tasks.add(taskAndProject3);
+        result.setValue(tasks);
+        Mockito.when(taskDataRepository.orderTaskByOlder()).thenReturn(result);
+        taskViewModel.orderTaskByOlder().observeForever(taskAndProjects -> {
+            assertSame(taskAndProjects.get(0).mTask.getCreationTimestamp(), task1.getCreationTimestamp());
+            assertSame(taskAndProjects.get(1).mTask.getCreationTimestamp(), task2.getCreationTimestamp());
+            assertSame(taskAndProjects.get(2).mTask.getCreationTimestamp(), task3.getCreationTimestamp());
+        });
     }
 }

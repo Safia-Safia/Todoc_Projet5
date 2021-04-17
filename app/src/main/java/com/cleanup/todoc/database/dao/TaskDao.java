@@ -18,8 +18,14 @@ public interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createTask(Task task);
 
+    @Query("DELETE FROM Task")
+    void deleteAllTasks();
+
+    @Query("SELECT * FROM Task WHERE taskId = :id")
+    LiveData<Task> getTask(long id);
+
     @Transaction
-    @Query("SELECT * FROM Task JOIN Project ON projectId = projectOwnerId")
+    @Query("SELECT * FROM Task JOIN Project ON projectId = projectOwnerId ORDER BY creationTimestamp ASC")
     LiveData<List<TaskAndProject>> getTasks();
 
     @Delete

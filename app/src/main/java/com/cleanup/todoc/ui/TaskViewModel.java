@@ -31,7 +31,6 @@ public class TaskViewModel extends ViewModel {
         return projectDataRepository.getProjects();
     }
 
-
     //--- TASKS LIST ---
     public LiveData<List<TaskAndProject>> getTasks() {
         return taskDataSource.getTasks();
@@ -42,6 +41,8 @@ public class TaskViewModel extends ViewModel {
 
     // --- DELETE ---
     public void deleteTask(Task task){ executor.execute(() -> taskDataSource.deleteTask(task)); }
+
+    public void deleteAllTasks(){ executor.execute(taskDataSource::deleteAllTasks); }
 
     public LiveData<List<TaskAndProject>> orderTaskByAsc(){return taskDataSource.orderTaskByAsc();}
 

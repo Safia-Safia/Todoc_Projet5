@@ -16,6 +16,10 @@ public class TaskDataRepository {
         mTaskDao = taskDao;
     }
 
+    public LiveData<Task> getTask(long id) {
+        return this.mTaskDao.getTask(id);
+    }
+
     //--- TASKS LIST ---
     public LiveData<List<TaskAndProject>> getTasks() {
         return this.mTaskDao.getTasks();
@@ -29,6 +33,10 @@ public class TaskDataRepository {
     // --- DELETE ---
     public void deleteTask(Task task){
         this.mTaskDao.deleteTask(task);
+    }
+
+    public void deleteAllTasks(){
+        this.mTaskDao.deleteAllTasks();
     }
 
     //--- ORDER TASKS ---
