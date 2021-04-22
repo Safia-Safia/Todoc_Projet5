@@ -1,6 +1,20 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            storeFile file('C:\\Users\\Le Lac\\.android\\debug.keystore')
+            storePassword 'android'
+            keyAlias 'android'
+            keyPassword 'android'
+        }
+        debug {
+            keyAlias 'android'
+            keyPassword 'android'
+            storePassword 'android'
+            storeFile file('C:\\Users\\Le Lac\\.android\\debug.keystore')
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.cleanup.todoc"
@@ -9,11 +23,16 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     lintOptions {
